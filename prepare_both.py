@@ -9,7 +9,7 @@ if project_path not in sys.path:
 from PIL import Image
 import numpy as np
 
-from utils.data_utils import find_image_and_mask_files_folder
+from data_utils import find_image_and_mask_files_folder
 
 def extract_patches(image, patch_size, use_padding):
     '''
@@ -227,10 +227,6 @@ def process_test_images(dataset_name, downsample_factor=None, patch_size=None, u
 
 if __name__ == '__main__':
      try:
-        #Dataset Informations (root_dir, dataset_name)
-        '''
-        Default dataset_name = data/{dataset_name}
-        '''
         root_dir= 'data/Dichtflächen_Cropped'
         dataset_name = 'Dichtflächen_Cropped'
         
