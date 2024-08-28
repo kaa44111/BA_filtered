@@ -8,26 +8,13 @@ if project_path not in sys.path:
 
 from PIL import Image
 import torch
+import torch.utils
+import numpy as np
 import torch.nn.functional as F
 from torchvision.transforms import v2
 from torch.utils.data import Dataset, DataLoader, Subset, ConcatDataset
 from collections import defaultdict
 import matplotlib.pyplot as plt
-
-#from train.train import run
-import numpy as np
-
-import torch
-import torch.utils
-from torchvision import tv_tensors
-from torchvision.transforms.v2 import CutMix, MixUp
-
-from torch.cuda.amp import autocast, GradScaler
-import time
-import copy
-#from models.UNetBatchNorm import UNetBatchNorm
-from UNetBatchNorm import UNetBatchNorm
-#from train import run
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -155,8 +142,6 @@ if __name__ == '__main__':
     images,masks = batch
     print(images.shape)
     print(masks.shape)
-
-     
 
     for i in range(5,10):
         show_image_and_mask(images[i],masks[i])
