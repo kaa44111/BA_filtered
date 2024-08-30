@@ -4,7 +4,7 @@ import os
 # Initialisierung des PYTHONPATH
 project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_path not in sys.path:
-    sys.path.append(project_path)
+    sys.path.insert(0,project_path)
 
 import random 
 
@@ -15,6 +15,8 @@ from tqdm.auto import tqdm
 
 from dataset.dataset import CustomDataset
 from torchvision.transforms import v2
+
+import wandb
 
 # Ensure deterministic behavior
 torch.backends.cudnn.deterministic = True
@@ -42,8 +44,9 @@ def load(dataset_name, val_split=0.2):
         dict: Dictionary containing the datasets for 'train', 'val', and 'test'.
     """
     # Define directories
-    train_dir = f"data/{dataset_name}/train"
-    test_dir = f"data/{dataset_name}/test"
+    train_dir = f"data/{dataset_name}"
+    #train_dir = f"data/{dataset_name}/train"
+    #test_dir = f"data/{dataset_name}/test"
 
     # Define transformations
     transform = v2.Compose([
@@ -75,9 +78,48 @@ def load(dataset_name, val_split=0.2):
         #'test': test_dataset
     }
 
+def load_and_log(dataset_name, val_split=0.2):
+    """
+    Load datasets using the CustomDataset class, split into train, val, and test,
+    and log them as W&B artifacts.
+    
+    Args:
+        dataset_name (str): Name of the dataset directory.
+        val_split (float): Fraction of the training set to use as validation.
+    """
+    # Start a W&B run with a specific job type and project name
+    with wandb.init(project="artifacts-example", job_type="load-data") as run:
+        
+        # Load datasets using the load function
+        datasets = load(dataset_name, val_split)
+        names = ["train", "val"]
+
+        # Modify the dataset name to remove or replace invalid characters
+        sanitized_name = dataset_name.replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss").replace(" ", "_")
+
+        # Create a new W&B artifact for the dataset
+        raw_data = wandb.Artifact(
+            name=f"{sanitized_name}_split", type="dataset",
+            description=f"Split of the {dataset_name} dataset into train/val",
+            metadata={"source": f"data/{dataset_name}",
+                      "sizes": {name: len(dataset) for name, dataset in datasets.items()}}
+        )
+
+        # Save the train, validation, and test datasets as .pt files in the artifact
+        for name, data in zip(names, datasets.values()):
+            with raw_data.new_file(name + ".pt", mode="wb") as file:
+                x, y = zip(*[(x, y) for x, y in data])  # Extract tensors from the dataset
+                x = torch.stack(x)
+                y = torch.stack(y)
+                torch.save((x, y), file)
+
+        # Log the artifact to W&B
+        run.log_artifact(raw_data)
+
 # Example usage
 if __name__ == "__main__":
     datasets = load("Dichtflächen_Cropped", val_split=0.2)
     print(f"Training set: {len(datasets['train'])} samples")
     print(f"Validation set: {len(datasets['val'])} samples")
     #print(f"Test set: {len(datasets['test'])} samples")
+    load_and_log("Dichtflächen_Cropped", val_split=0.2)

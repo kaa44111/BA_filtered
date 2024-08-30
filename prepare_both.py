@@ -8,7 +8,7 @@ if project_path not in sys.path:
 
 from PIL import Image
 import numpy as np
-
+import wandb
 from data_utils import find_image_and_mask_files_folder
 
 def extract_patches(image, patch_size, use_padding):
@@ -225,13 +225,59 @@ def process_test_images(dataset_name, downsample_factor=None, patch_size=None, u
     return output_dir
 
 
-if __name__ == '__main__':
-     try:
-        root_dir= 'data/Dichtflächen_Cropped'
-        dataset_name = 'Dichtflächen_Cropped'
+def preprocess_and_log(dataset_name, val_split=0.2, patch_size=None, downsample_factor=None):
+    """
+    Preprocess training and validation datasets and log the preprocessed data as a new W&B artifact.
+    
+    Args:
+        dataset_name (str): Name of the dataset directory.
+        val_split (float): Fraction of the training set to use as validation.
+        patch_size (int, optional): Size of the patches to extract.
+        downsample_factor (int, optional): Factor by which to downsample images.
+    """
+    # Start a W&B run with a specific job type and project name
+    with wandb.init(project="artifacts-example", job_type="preprocess-data") as run:
         
-        train_dir = process_images(dataset_name,patch_size=192)
-        #process_test_images(dataset_name,patch_size=192,downsample_factor=2,output_processed=None)
+        # Reference the raw data artifact
+        raw_data_artifact = run.use_artifact('kasaamina-oth-regensburg/artifacts-example/Dichtflaechen_Cropped_split:v0', type='dataset')
+        raw_data_dir = raw_data_artifact.download()
 
-     except Exception as e:
-        print(f"An error occurred: {e}")
+        # Preprocess the datasets
+        train_dir = process_images(dataset_name, patch_size=patch_size, downsample_factor=downsample_factor)
+
+        # Modify the dataset name to remove or replace invalid characters
+        sanitized_name = dataset_name.replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss").replace(" ", "_")
+
+        # Create a new W&B artifact for the preprocessed dataset
+        processed_data = wandb.Artifact(
+            name=f"{sanitized_name}_preprocessed", type="dataset",
+            description=f"Preprocessed version of the {dataset_name} dataset with patches and/or downsampling",
+            metadata={"source": f"data/{dataset_name}"}
+        )
+
+        # Save the preprocessed train and validation datasets as .pt files in the artifact
+        for split_name, directory in zip(["train", "val"], [train_dir, None]):  # Only include train, no test
+            if directory is not None:
+                for file_name in os.listdir(os.path.join(directory, "grabs")):
+                    file_path = os.path.join(directory, "grabs", file_name)
+                    with processed_data.new_file(f"{split_name}/{file_name}", mode="wb") as file:
+                        with open(file_path, 'rb') as img_file:
+                            file.write(img_file.read())
+
+        # Log the preprocessed artifact to W&B
+        run.log_artifact(processed_data)
+
+# # Example usage
+# if __name__ == "__main__":
+#     preprocess_and_log("Dichtflächen_Cropped", val_split=0.2, patch_size=192)
+
+# if __name__ == '__main__':
+#      try:
+#         root_dir= 'data/Dichtflächen_Cropped'
+#         dataset_name = 'Dichtflächen_Cropped'
+        
+#         train_dir = process_images(dataset_name,patch_size=192)
+#         #process_test_images(dataset_name,patch_size=192,downsample_factor=2,output_processed=None)
+
+#      except Exception as e:
+#         print(f"An error occurred: {e}")
