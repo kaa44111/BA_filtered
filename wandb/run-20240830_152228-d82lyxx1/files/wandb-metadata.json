@@ -1,0 +1,53 @@
+{
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.10.14",
+    "heartbeatAt": "2024-08-30T13:22:29.031369",
+    "startedAt": "2024-08-30T13:22:28.501575",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "e:\\Amina_DL\\BA_filtered\\BA_filtered\\dataset\\dataset_load.py",
+    "codePathLocal": "dataset\\dataset_load.py",
+    "codePath": "dataset\\dataset_load.py",
+    "git": {
+        "remote": "https://github.com/kaa44111/BA_filtered.git",
+        "commit": "e9989b3e77556db944cc36e0a77a81a64778200b"
+    },
+    "email": "niklas.ruppel@gefasoft.com",
+    "root": "E:/Amina_DL/BA_filtered/BA_filtered",
+    "host": "GSRGB1IPC201801",
+    "username": "Gefasoft",
+    "executable": "C:\\Users\\Gefasoft\\anaconda3\\envs\\pytorch_env\\python.exe",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 4200.0,
+        "min": 0.0,
+        "max": 4200.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 4200.0,
+            "min": 0.0,
+            "max": 4200.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 476.93749618530273,
+            "used": 227.60291290283203
+        }
+    },
+    "gpu": "NVIDIA GeForce GTX 1060 6GB",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce GTX 1060 6GB",
+            "memory_total": 6442450944
+        }
+    ],
+    "memory": {
+        "total": 15.950958251953125
+    }
+}
